@@ -1,0 +1,10 @@
+{
+  (id,
+    title,
+    description,
+    dueDate,
+    repeatRule,
+    repeatInterval,
+    completedAt,
+    overdueCount);
+}
