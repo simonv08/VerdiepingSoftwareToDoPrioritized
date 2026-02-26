@@ -1,0 +1,15 @@
+.bg-lines-drop {
+  will-change: transform;
+  animation-name: bg-lines-drop;
+  animation-timing-function: cubic-bezier(0.4, 0.26, 0, 0.97);
+  animation-iteration-count: infinite;
+}
+
+@keyframes bg-lines-drop {
+  0% {
+    transform: translate3d(0, -60vh, 0);
+  }
+  100% {
+    transform: translate3d(0, 160vh, 0);
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "verdiepingsoftware-todo-prioritized",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix todo-app run dev",
+    "build": "npm --prefix todo-app run build",
+    "lint": "npm --prefix todo-app run lint",
+    "preview": "npm --prefix todo-app run preview",
+    "install:app": "npm --prefix todo-app install"
+  }
+}

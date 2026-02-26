@@ -1,76 +1,95 @@
-# React + TypeScript + Vite
+# ToDoPriorities (Verdieping Software)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Lokale to-do app (React + Vite + Tailwind) met:
 
-Currently, two official plugins are available:
+- Deadlines: `daysUntilDue`, `overdue`, `overdueDays`
+- Status classificatie: Open / Due soon / Overdue / Completed
+- Auto-repeat bij afronden (daily/weekly/monthly/custom)
+- Dynamische prioriteit + automatische sortering
+- Firebase (Firestore) persistence + async state (loading/error/retry)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Run
 
-## React Compiler
+Vanuit repo-root:
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Firebase (cross-device sync)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Deze app gebruikt Firebase (Auth + Firestore). Je data staat per gebruiker in Firestore, en je moet inloggen om taken/boodschappen te zien of te wijzigen.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Maak een Firebase project
+2. Voeg een **Web App** toe (Project settings → Your apps → Web app)
+3. Zet **Authentication** aan → Sign-in method → **Google** (aanrader voor cross-device)
+4. Authentication → Settings → Authorized domains → voeg `localhost` toe (voor development)
+5. Zet **Cloud Firestore** aan
+6. Maak een `todo-app/.env` op basis van `.env.example` en vul je Firebase config in
+
+Voorbeeld rules (iets strakker):
+
+```txt
+rules_version = '2';
+service cloud.firestore {
+	match /databases/{database}/documents {
+		function isOwner(userId) {
+			return request.auth != null && request.auth.uid == userId;
+		}
+
+		match /users/{userId}/tasks/{taskId} {
+			allow read: if isOwner(userId);
+			allow create: if isOwner(userId)
+				&& request.resource.data.id == taskId;
+			allow update: if isOwner(userId)
+				&& request.resource.data.id == taskId
+				&& request.resource.data.createdAt == resource.data.createdAt;
+			allow delete: if isOwner(userId);
+		}
+
+		match /users/{userId}/groceries/{itemId} {
+			allow read: if isOwner(userId);
+			allow create: if isOwner(userId)
+				&& request.resource.data.id == itemId;
+			allow update: if isOwner(userId)
+				&& request.resource.data.id == itemId
+				&& request.resource.data.createdAt == resource.data.createdAt;
+			allow delete: if isOwner(userId);
+		}
+
+		match /users/{userId}/groceryHistory/{historyId} {
+			allow read, write: if isOwner(userId);
+		}
+	}
+}
 ```
-# ToDoPriorities
+
+Of direct in deze folder:
+
+```bash
+npm install
+npm run dev
+```
+
+## Architectuur
+
+- UI components: `src/Components/*`
+- Business logic (mutaties/selectors): `src/Features/tasks/*`
+- Persistence service: `src/service/tasksService.ts`
+- Async state hook: `src/hooks/useTasks.ts`
+
+## Prioriteit
+
+Het algoritme staat in `src/Features/tasks/priority.ts` en gebruikt:
+
+- repeat interval
+- daysUntilDue
+- overdueDays
+- overdueCount
+
+Output: `priorityScore: number` (hoger = urgenter).
+
+## Database & Sync (fase 6)
+
+Momenteel: Firebase (Auth + Firestore) voor cross-device sync.
