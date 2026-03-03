@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+todo-app/node_modules/
+# npm may generate this; never commit it
+node_modules/.package-lock.json
+
+# Build outputs
+todo-app/dist/
+todo-app/dist-ssr/
+android/.gradle/
+android/**/build/
+
+# Capacitor copied web assets (generated)
+android/app/src/main/assets/public/
+
+# Local Android SDK config
+android/local.properties
+
+# Logs
+*.log
