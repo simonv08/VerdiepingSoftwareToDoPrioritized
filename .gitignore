@@ -16,5 +16,8 @@ android/app/src/main/assets/public/
 # Local Android SDK config
 android/local.properties
 
+# Android Studio / IntelliJ project files
+android/.idea/
+
 # Logs
 *.log
