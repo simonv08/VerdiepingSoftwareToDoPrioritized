@@ -5,10 +5,20 @@ type LineSpec = {
   id: string
   leftPct: number
   widthPx: number
-  heightVh: number
   opacity: number
   delayS: number
   durationS: number
+  driftXPx: number
+  startXPx: number
+  angleDeg: number
+  segments: Array<{
+    id: string
+    yPx: number
+    heightPx: number
+    opacity: number
+    blurPx: number
+  }>
+  headSizePx: number
   gradientClassName: string
 }
 
@@ -53,13 +63,41 @@ export default function BackgroundLines() {
       const gradientClassName = gradients[Math.floor(rand() * gradients.length)]!
 
       const leftPct = rand() * 100
-      // Slightly bigger streaks
-      const widthPx = rand() < 0.7 ? 2 : rand() < 0.92 ? 3 : 4
-      const heightVh = 14 + Math.floor(rand() * 20)
-      const opacity = 0.18 + rand() * 0.28
+      // Shooting-star feel: thinner trails
+      const widthPx = rand() < 0.55 ? 1 : rand() < 0.92 ? 2 : 3
+      const opacity = 0.22 + rand() * 0.34
 
-      const baseDurationS = 7.5 + rand() * 7.5
-      const durationS = baseDurationS * 1.5
+      // Diagonal drift (shooting-star direction) — mirrored (moves left while falling)
+      const driftXPx = -(220 + Math.floor(rand() * 520))
+      const startXPx = -Math.floor(driftXPx * (0.22 + rand() * 0.12))
+
+      // Straight path: pick one direction and keep it for the whole fall.
+      // Approximate vertical travel in px so the diagonal angle feels consistent.
+      const approxDyPx = 1100
+      const dx = driftXPx - startXPx
+      const angleDeg = (Math.atan2(-dx, approxDyPx) * 180) / Math.PI
+
+      const segmentCount = 10 + Math.floor(rand() * 10)
+      const segGapPx = 8 + Math.floor(rand() * 7)
+      const headSizePx = 14 + Math.floor(rand() * 10)
+      const segments = Array.from({ length: segmentCount }).map((_, segIdx) => {
+        const t = (segIdx + 1) / (segmentCount + 1)
+        const yPx = -(segIdx + 1) * segGapPx
+        const heightPx = 10 + Math.floor((1 - t) * 18)
+        const segOpacity = Math.max(0.06, (1 - t) ** 2) * 0.65
+        const blurPx = 0.5 + t * 5.5
+        return {
+          id: `seg-${idx}-${segIdx}`,
+          yPx,
+          heightPx,
+          opacity: segOpacity,
+          blurPx,
+        }
+      })
+
+      // Slower fall
+      const baseDurationS = 8.5 + rand() * 7.5
+      const durationS = baseDurationS
       // negative delays start the animation mid-flight, so it feels random immediately
       const delayS = -(rand() * durationS)
 
@@ -67,10 +105,14 @@ export default function BackgroundLines() {
         id: `line-${idx}`,
         leftPct,
         widthPx,
-        heightVh,
         opacity,
         delayS,
         durationS,
+        driftXPx,
+        startXPx,
+        angleDeg,
+        segments,
+        headSizePx,
         gradientClassName,
       }
     })
@@ -82,21 +124,47 @@ export default function BackgroundLines() {
         {lines.map((l) => (
           <div
             key={l.id}
-            className="absolute top-0 h-full overflow-hidden"
+            className="absolute top-0 h-full overflow-visible"
             style={{
               left: `${l.leftPct}%`,
-              width: `${l.widthPx}px`,
+              width: 0,
             }}
           >
             <div
-              className={`bg-lines-drop absolute left-0 top-0 w-full ${l.gradientClassName}`}
+              className="bg-star absolute left-0 top-0"
               style={{
-                height: `${l.heightVh}vh`,
                 opacity: l.opacity,
                 animationDelay: `${l.delayS}s`,
                 animationDuration: `${l.durationS}s`,
+                ['--bg-star-x0' as string]: `${l.startXPx}px`,
+                ['--bg-star-x1' as string]: `${l.driftXPx}px`,
+                ['--bg-star-angle' as string]: `${l.angleDeg}deg`,
               }}
-            />
+            >
+              <div className="bg-star-body">
+                <div
+                  className={`bg-star-head ${l.gradientClassName}`}
+                  style={{
+                    width: `${l.headSizePx}px`,
+                    height: `${l.headSizePx}px`,
+                  }}
+                />
+
+                {l.segments.map((s) => (
+                  <div
+                    key={s.id}
+                    className={`bg-star-seg ${l.gradientClassName}`}
+                    style={{
+                      width: `${l.widthPx}px`,
+                      height: `${s.heightPx}px`,
+                      transform: `translate3d(-50%, ${s.yPx}px, 0)`,
+                      opacity: s.opacity,
+                      filter: `blur(${s.blurPx}px)`,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         ))}
       </div>
