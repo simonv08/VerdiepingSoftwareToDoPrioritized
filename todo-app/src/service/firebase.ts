@@ -1,14 +1,16 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { getAuth, indexedDBLocalPersistence, initializeAuth, browserLocalPersistence } from 'firebase/auth'
 import { enableIndexedDbPersistence, getFirestore } from 'firebase/firestore'
 
-function requireEnv(name: string): string {
-  const value = import.meta.env[name]
-  if (typeof value !== 'string' || value.length === 0) {
-    throw new Error(`Missing env var ${name}. Copy .env.example to .env and fill Firebase config.`)
-  }
-  return value
-}
+const firebaseConfig = {
+  apiKey: "AIzaSyBVciZ2thcdG9ny4MllW8Zz0mi0CDwAT2A",
+  authDomain: "todo-6ba77.firebaseapp.com",
+  projectId: "todo-6ba77",
+  storageBucket: "todo-6ba77.firebasestorage.app",
+  messagingSenderId: "188476231988",
+  appId: "1:188476231988:web:080034697a544562231561",
+  measurementId: "G-0GLG16ETZ6"
+};
 
 let cached: {
   app: FirebaseApp
@@ -19,23 +21,15 @@ let cached: {
 export function getFirebase() {
   if (cached) return cached
 
-  const app = initializeApp({
-    apiKey: requireEnv('VITE_FIREBASE_API_KEY'),
-    authDomain: requireEnv('VITE_FIREBASE_AUTH_DOMAIN'),
-    projectId: requireEnv('VITE_FIREBASE_PROJECT_ID'),
-    storageBucket: requireEnv('VITE_FIREBASE_STORAGE_BUCKET'),
-    messagingSenderId: requireEnv('VITE_FIREBASE_MESSAGING_SENDER_ID'),
-    appId: requireEnv('VITE_FIREBASE_APP_ID'),
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  const app = initializeApp(firebaseConfig)
+
+  // Use persistent storage so the login isn't lost when switching apps
+  const auth = initializeAuth(app, {
+    persistence: [indexedDBLocalPersistence, browserLocalPersistence]
   })
 
-  const auth = getAuth(app)
   const db = getFirestore(app)
-
-  // Best-effort offline support; this can fail in some environments.
-  enableIndexedDbPersistence(db).catch(() => {
-    // ignore
-  })
+  enableIndexedDbPersistence(db).catch(() => {})
 
   cached = { app, auth, db }
   return cached

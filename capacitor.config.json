@@ -1,5 +1,9 @@
 {
   "appId": "com.DeGeweldigeXD.ToDoApp",
   "appName": "ToDoApp",
-  "webDir": "todo-app/dist"
+  "webDir": "todo-app/dist",
+  "server": {
+    "androidScheme": "https",
+    "hostname": "localhost"
+  }
 }

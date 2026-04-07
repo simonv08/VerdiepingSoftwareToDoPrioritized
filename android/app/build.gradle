@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.DeGeweldigeXD.ToDoApp"
-    compileSdk rootProject.ext.compileSdkVersion
+    compileSdk 35
     defaultConfig {
         applicationId "com.DeGeweldigeXD.ToDoApp"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -21,6 +21,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.browser:browser:1.8.0'
     }
 }
 
@@ -40,6 +46,7 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    implementation "androidx.browser:browser:1.8.0"
 }
 
 apply from: 'capacitor.build.gradle'
