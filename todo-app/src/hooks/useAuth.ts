@@ -29,9 +29,6 @@ type AuthResult = AuthState & {
 
 function friendlyAuthError(e: unknown): string {
   const message = e instanceof Error ? e.message : String(e)
-  if (message.includes('missing initial state')) {
-    return 'Authentication state lost. Using Native Login instead of Web Login should fix this.'
-  }
   return message || 'Unknown auth error'
 }
 
@@ -86,59 +83,32 @@ export function useAuth(): AuthResult {
       emit({ ...cachedState, loading: false, error: 'Google Login Failed: ' + error })
     }
   })
-const doGoogleSignIn = useCallback(async () => {
-  ensureAuthInit()
-  if (!authRef) return
 
-  emit({ ...cachedState, loading: true, error: null })
+  const doGoogleSignIn = useCallback(async () => {
+    ensureAuthInit()
+    if (!authRef) return
 
-  try {
-    if (Capacitor.isNativePlatform()) {
-      const result = await SocialLogin.login({
-        provider: 'google',
-        options: {
-          // IMPORTANT: Use the "Web Client ID", NOT the Android Client ID
-          clientId: '188476231988-xxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com',
-        },
-      })
+    emit({ ...cachedState, loading: true, error: null })
 
-      if (result.result && 'idToken' in result.result && result.result.idToken) {
-        const credential = GoogleAuthProvider.credential(result.result.idToken)
-        await signInWithCredential(authRef, credential)
-        return
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const result = await SocialLogin.login({
+          provider: 'google',
+          options: {},
+        })
+
+        if (result.result && 'idToken' in result.result && result.result.idToken) {
+          const credential = GoogleAuthProvider.credential(result.result.idToken)
+          await signInWithCredential(authRef, credential)
+          return
+        }
       }
-    }
 
-    webLogin()
-  } catch (e) {
-    emit({ ...cachedState, loading: false, error: friendlyAuthError(e) })
-  }
-}, [webLogin])
-//   const doGoogleSignIn = useCallback(async () => {
-//     ensureAuthInit()
-//     if (!authRef) return
-//
-//     emit({ ...cachedState, loading: true, error: null })
-//
-//     try {
-//       if (Capacitor.isNativePlatform()) {
-//         const result = await SocialLogin.login({
-//           provider: 'google',
-//           options: {},
-//         })
-//
-//         if (result.result && 'idToken' in result.result && result.result.idToken) {
-//           const credential = GoogleAuthProvider.credential(result.result.idToken)
-//           await signInWithCredential(authRef, credential)
-//           return
-//         }
-//       }
-//
-//       webLogin()
-//     } catch (e) {
-//       emit({ ...cachedState, loading: false, error: friendlyAuthError(e) })
-//     }
-//  }, [webLogin])
+      webLogin()
+    } catch (e) {
+      emit({ ...cachedState, loading: false, error: friendlyAuthError(e) })
+    }
+  }, [webLogin])
 
   const doSignOut = useCallback(async () => {
     ensureAuthInit()

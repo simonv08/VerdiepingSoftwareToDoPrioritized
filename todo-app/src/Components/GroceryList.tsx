@@ -270,7 +270,7 @@ export default function GroceryList({ items, historyNames, syncing, onAdd, onTog
                     <button
                       type="button"
                       onClick={() => onDelete(i.id)}
-                      className="rounded-lg border border-red-500/35 bg-red-500/10 px-2 py-1"
+                      className="rounded-lg border border-white/15 bg-white/10 px-2 py-1"
                     >
                       Del
                     </button>
@@ -315,7 +315,7 @@ export default function GroceryList({ items, historyNames, syncing, onAdd, onTog
                         <button
                           type="button"
                           onClick={() => onDelete(i.id)}
-                          className="rounded-lg border border-red-500/35 bg-red-500/10 px-2 py-1"
+                          className="rounded-lg border border-white/15 bg-white/10 px-2 py-1"
                         >
                           Del
                         </button>
