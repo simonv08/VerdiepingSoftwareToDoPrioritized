@@ -94,8 +94,8 @@ function TaskListItem({ task, onToggleCompleted, onDelete }: TaskListItemProps) 
           <div className="grid grid-cols-[72px_1fr] gap-2">
             <dt className="opacity-70">Prio</dt>
             <dd className="m-0">
-              {task.manualPriority ? `Manual ${task.manualPriority} • ` : ''}
-              {priorityLevel} ({priorityScore})
+              {task.manualPriority ? `Manual ${task.manualPriority} ` : ''}
+              {/* {priorityLevel} ({priorityScore}) */}
             </dd>
           </div>
           <div className="grid grid-cols-[72px_1fr] gap-2">
