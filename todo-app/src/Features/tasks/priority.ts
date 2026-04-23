@@ -1,17 +1,16 @@
 import type { Task } from './taskModel'
 import { daysUntilDue, overdueDays } from './deadline'
-import { PRIORITY_CONSTANTS } from './priorityConstants'
 
 function manualPriorityBoost(task: Task): number {
   switch (task.manualPriority) {
     case 'Critical':
-      return PRIORITY_CONSTANTS.manualPriority.critical
+      return 1200
     case 'High':
-      return PRIORITY_CONSTANTS.manualPriority.high
+      return 650
     case 'Medium':
-      return PRIORITY_CONSTANTS.manualPriority.medium
+      return 250
     case 'Low':
-      return PRIORITY_CONSTANTS.manualPriority.low
+      return 80
     default:
       return 0
   }
@@ -27,9 +26,9 @@ function repeatIntervalInDays(task: Task): number {
     case 'daily':
       return interval
     case 'weekly':
-      return interval * PRIORITY_CONSTANTS.repeatInterval.weekly
+      return interval * 7
     case 'monthly':
-      return interval * PRIORITY_CONSTANTS.repeatInterval.monthly
+      return interval * 30
     case 'custom':
       return interval
     case 'none':
@@ -43,8 +42,8 @@ function repeatIntervalInDays(task: Task): number {
  * Output is a numeric score where higher = more urgent.
  */
 export function calculatePriorityScore(task: Task, now: Date = new Date()): number {
-  if (task.archivedAt) return PRIORITY_CONSTANTS.penalties.archived
-  if (task.completedAt) return PRIORITY_CONSTANTS.penalties.completed
+  if (task.archivedAt) return -1_000_000
+  if (task.completedAt) return -100_000
 
   const dueIn = daysUntilDue(task, now)
   const overdue = overdueDays(task, now)
@@ -56,25 +55,25 @@ export function calculatePriorityScore(task: Task, now: Date = new Date()): numb
   score += manualPriorityBoost(task)
 
   // Overdue dominates
-  score += overdue * PRIORITY_CONSTANTS.overdue.baseMultiplier
-  score += (task.overdueCount || 0) * PRIORITY_CONSTANTS.overdue.countMultiplier
+  score += overdue * 500
+  score += (task.overdueCount || 0) * 120
 
   // Due soon boosts
   if (typeof dueIn === 'number') {
     if (dueIn < 0) {
-      score += PRIORITY_CONSTANTS.dueSoon.past
+      score += 1000
     } else if (dueIn === 0) {
-      score += PRIORITY_CONSTANTS.dueSoon.today
+      score += 600
     } else if (dueIn <= 3) {
-      score += PRIORITY_CONSTANTS.dueSoon.within3Days.baseScore - dueIn * PRIORITY_CONSTANTS.dueSoon.within3Days.dayPenalty
+      score += 400 - dueIn * 80
     } else {
-      score += Math.max(0, PRIORITY_CONSTANTS.dueSoon.within7Days.baseScore - dueIn * PRIORITY_CONSTANTS.dueSoon.within7Days.dayPenalty)
+      score += Math.max(0, 120 - dueIn * 8)
     }
   }
 
   // Shorter repeat interval => slightly higher urgency
   if (Number.isFinite(repeatDays)) {
-    score += Math.round(PRIORITY_CONSTANTS.repeatUrgency.boost / Math.max(1, repeatDays))
+    score += Math.round(200 / Math.max(1, repeatDays))
   }
 
   return score
