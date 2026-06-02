@@ -53,26 +53,26 @@ export default function TaskForm({ onAddTask, onCancel }: Props) {
   }
 
   return (
-    <form className="grid gap-4" onSubmit={handleSubmit}>
-      <div className="grid grid-cols-1 gap-4">
-        <div className="grid gap-2">
-          <label className="text-sm opacity-80" htmlFor={titleId}>
-            Title
-          </label>
-          <input
-            id={titleId}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Nieuwe taak…"
-            autoComplete="off"
-            className="rounded-xl border border-white/15 bg-black/30 px-3 py-2 outline-none focus:border-white/30"
-          />
-        </div>
+    <form className="grid gap-2 text-xs" onSubmit={handleSubmit}>
+      {/* Title - required field */}
+      <div className="grid gap-1">
+        <label className="opacity-70" htmlFor={titleId}>
+          Title *
+        </label>
+        <input
+          id={titleId}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Task name…"
+          autoComplete="off"
+          className="rounded-lg border border-white/15 bg-black/30 px-2 py-1 text-sm outline-none focus:border-white/30"
+        />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="grid gap-2">
-          <label className="text-sm opacity-80" htmlFor={dueId}>
+      {/* Due, Priority on one row */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-1">
+          <label className="opacity-70" htmlFor={dueId}>
             Due
           </label>
           <input
@@ -80,39 +80,40 @@ export default function TaskForm({ onAddTask, onCancel }: Props) {
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="rounded-xl border border-white/15 bg-black/30 px-3 py-2 outline-none focus:border-white/30"
+            className="rounded-lg border border-white/15 bg-black/30 px-2 py-1 text-sm outline-none focus:border-white/30"
           />
         </div>
 
-        <div className="grid gap-2">
-          <label className="text-sm opacity-80" htmlFor={manualPriorityId}>
+        <div className="grid gap-1">
+          <label className="opacity-70" htmlFor={manualPriorityId}>
             Priority
           </label>
           <select
             id={manualPriorityId}
             value={manualPriority}
             onChange={(e) => setManualPriority(e.target.value as ManualPriority | '')}
-            className="rounded-xl border border-white/15 bg-black/30 px-3 py-2 outline-none focus:border-white/30"
+            className="rounded-lg border border-white/15 bg-black/30 px-2 py-1 text-sm outline-none focus:border-white/30"
           >
             <option value="">Auto</option>
             <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
+            <option value="Medium">Med</option>
             <option value="High">High</option>
-            <option value="Critical">Critical</option>
+            <option value="Critical">Crit</option>
           </select>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="grid gap-2">
-          <label className="text-sm opacity-80" htmlFor={repeatRuleId}>
+      {/* Repeat on one row */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-1">
+          <label className="opacity-70" htmlFor={repeatRuleId}>
             Repeat
           </label>
           <select
             id={repeatRuleId}
             value={repeatRule}
             onChange={(e) => setRepeatRule(e.target.value as RepeatRule)}
-            className="rounded-xl border border-white/15 bg-black/30 px-3 py-2 outline-none focus:border-white/30"
+            className="rounded-lg border border-white/15 bg-black/30 px-2 py-1 text-sm outline-none focus:border-white/30"
           >
             <option value="none">none</option>
             <option value="daily">daily</option>
@@ -122,8 +123,8 @@ export default function TaskForm({ onAddTask, onCancel }: Props) {
           </select>
         </div>
 
-        <div className="grid gap-2">
-          <label className="text-sm opacity-80" htmlFor={repeatIntervalId}>
+        <div className="grid gap-1">
+          <label className="opacity-70" htmlFor={repeatIntervalId}>
             Interval
           </label>
           <input
@@ -132,39 +133,41 @@ export default function TaskForm({ onAddTask, onCancel }: Props) {
             value={repeatInterval}
             onChange={(e) => setRepeatInterval(e.target.value)}
             disabled={repeatRule === 'none'}
-            className="rounded-xl border border-white/15 bg-black/30 px-3 py-2 outline-none focus:border-white/30 disabled:opacity-50"
+            className="rounded-lg border border-white/15 bg-black/30 px-2 py-1 text-sm outline-none focus:border-white/30 disabled:opacity-50"
           />
         </div>
       </div>
 
-      <div className="mt-4 grid gap-2">
-        <label className="text-sm opacity-80" htmlFor={descId}>
+      {/* Description */}
+      <div className="grid gap-1">
+        <label className="opacity-70" htmlFor={descId}>
           Description
         </label>
         <textarea
           id={descId}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="(optioneel)"
-          rows={2}
-          className="resize-y rounded-xl border border-white/15 bg-black/30 px-3 py-2 outline-none focus:border-white/30"
+          placeholder="Optional notes…"
+          rows={1}
+          className="resize-y rounded-lg border border-white/15 bg-black/30 px-2 py-1 text-sm outline-none focus:border-white/30"
         />
       </div>
 
-      <div className="flex items-center justify-end gap-2">
+      {/* Buttons */}
+      <div className="mt-2 flex items-center justify-end gap-2">
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-xl border border-white/15 bg-white/5 px-4 py-2"
+          className="rounded-lg border border-white/15 bg-white/5 px-3 py-1 text-xs hover:bg-white/10 transition-colors"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={!canSubmit}
-          className="rounded-xl border border-white/15 bg-white/10 px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg border border-white/15 bg-white/10 px-3 py-1 text-xs hover:bg-white/20 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Add task
+          Add
         </button>
       </div>
     </form>

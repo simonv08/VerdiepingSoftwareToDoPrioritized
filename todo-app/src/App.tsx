@@ -5,6 +5,7 @@ import BackgroundLines from './Components/BackgroundLines'
 import TaskForm from './Components/TaskForm'
 import GroceryList from './Components/GroceryList'
 import TaskList from './Components/TaskList'
+import { CalendarEvents } from './Components/CalendarEvents'
 import type { NewTaskInput } from './Features/tasks/taskMutations'
 import { selectVisibleTasks } from './Features/tasks/taskSelectors'
 import { sortTasksByPriority } from './Features/tasks/priority'
@@ -140,11 +141,11 @@ function App() {
   }, [syncWithWidgetData])
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <div className="min-h-screen">
       <BackgroundLines />
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <BackgroundLines />
+      {/* Top-left header with sign-in button */}
+      <div className="fixed top-0 left-0 z-40 p-4">
         <div className="flex flex-col items-start gap-2">
           <div className="flex items-center gap-2">
             {auth.user && !auth.user.isAnonymous ? (
@@ -155,7 +156,7 @@ function App() {
                 <button
                   type="button"
                   onClick={() => void auth.actions.signOut()}
-                  className="rounded-lg border border-white/15 bg-white/5 px-3 py-2"
+                  className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 transition-colors"
                 >
                   Sign out
                 </button>
@@ -164,10 +165,10 @@ function App() {
               <button
                 type="button"
                 onClick={() => void auth.actions.signInWithGoogle()}
-                className="rounded-lg border border-white/15 bg-white/5 px-3 py-2"
+                className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 transition-colors"
                 disabled={auth.loading}
               >
-                Continue with Google
+                {auth.loading ? 'Signing in...' : 'Continue with Google'}
               </button>
             )}
           </div>
@@ -178,39 +179,9 @@ function App() {
             </div>
           ) : null}
         </div>
-
-        <button
-          type="button"
-          onClick={() => setAddOpen(true)}
-          className="rounded-lg border border-white/15 bg-white/5 px-3 py-2"
-          disabled={!auth.user || auth.loading}
-        >
-          Add new
-        </button>
       </div>
 
-      {addOpen ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 p-4"
-          onClick={() => setAddOpen(false)}
-        >
-          <div
-            className="w-full max-w-2xl rounded-xl border border-white/15 bg-black/80 p-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="m-0 text-xl font-semibold">New task</h2>
-            <p className="mt-1 text-sm opacity-75">Set all fields, then add.</p>
-
-            <div className="mt-4">
-              <TaskForm onAddTask={handleAddTask} onCancel={() => setAddOpen(false)} />
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      <main>
+      <main className="mx-auto max-w-7xl px-4 py-8 pt-24">
         {loading ? <p className="mb-3 opacity-75">Loading…</p> : null}
         {syncing ? <p className="mb-3 text-sm opacity-75">Syncing…</p> : null}
         {error ? (
@@ -226,9 +197,39 @@ function App() {
           </div>
         ) : null}
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_360px]">
-          <div>
+        {/* Three-column layout for tables */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          {/* Tasks column */}
+          <div className="lg:col-span-1">
             <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              {/* Add new button and form inside task window */}
+              <div className="mb-4">
+                {!addOpen ? (
+                  <button
+                    type="button"
+                    onClick={() => setAddOpen(true)}
+                    className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm hover:bg-white/10 transition-colors"
+                    disabled={!auth.user || auth.loading}
+                  >
+                    + Add new task
+                  </button>
+                ) : (
+                  <div className="rounded-lg border border-white/20 bg-black/30 p-3 mb-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="m-0 text-sm font-semibold">New task</h3>
+                      <button
+                        type="button"
+                        onClick={() => setAddOpen(false)}
+                        className="text-xs opacity-60 hover:opacity-100 transition-opacity"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <TaskForm onAddTask={handleAddTask} onCancel={() => setAddOpen(false)} />
+                  </div>
+                )}
+              </div>
+
               <TaskList
                 tasks={visibleSortedTasks}
                 onToggleCompleted={handleToggleCompleted}
@@ -236,28 +237,39 @@ function App() {
               />
             </div>
           </div>
-          <div>
-            {groceries.error ? (
-              <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
-                <p className="m-0">Error: {groceries.error}</p>
-                <button
-                  type="button"
-                  onClick={groceries.retry}
-                  className="mt-3 rounded-lg border border-white/15 bg-white/5 px-3 py-2"
-                >
-                  Retry
-                </button>
-              </div>
-            ) : null}
 
-            <GroceryList
-              items={groceries.items}
-              historyNames={groceries.historyNames}
-              syncing={groceries.syncing}
-              onAdd={(input) => void groceries.actions.add(input)}
-              onToggleBought={(id) => void groceries.actions.toggleBought(id)}
-              onDelete={(id) => void groceries.actions.remove(id)}
-            />
+          {/* Groceries column */}
+          <div className="lg:col-span-1">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              {groceries.error ? (
+                <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+                  <p className="m-0 text-sm">Error: {groceries.error}</p>
+                  <button
+                    type="button"
+                    onClick={groceries.retry}
+                    className="mt-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : null}
+
+              <GroceryList
+                items={groceries.items}
+                historyNames={groceries.historyNames}
+                syncing={groceries.syncing}
+                onAdd={(input) => void groceries.actions.add(input)}
+                onToggleBought={(id) => void groceries.actions.toggleBought(id)}
+                onDelete={(id) => void groceries.actions.remove(id)}
+              />
+            </div>
+          </div>
+
+          {/* Calendar column */}
+          <div className="lg:col-span-1">
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <CalendarEvents daysInFuture={30} maxResults={8} />
+            </div>
           </div>
         </div>
       </main>
