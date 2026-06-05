@@ -7,11 +7,12 @@ admin.initializeApp();
 // Initialize the calendar API with service account credentials
 const calendar = google.calendar('v3');
 
-// Get authentication client (uses GOOGLE_APPLICATION_CREDENTIALS environment variable)
-function getAuthClient() {
-  return new Promise((resolve, reject) => {
-    google.auth.getClient().then(resolve).catch(reject);
+// Get authentication using Firebase Admin's default credentials
+async function getAuthClient() {
+  const auth = new google.auth.GoogleAuth({
+    scopes: ['https://www.googleapis.com/auth/calendar'],
   });
+  return auth;
 }
 
 interface CalendarEvent {
@@ -44,7 +45,7 @@ export const createCalendar = functions.https.onCall(
       const { summary, description, timeZone = 'UTC' } = request.data;
 
       const response = await calendar.calendars.insert({
-        auth,
+        auth: auth as any,
         requestBody: {
           summary,
           description,
@@ -52,11 +53,11 @@ export const createCalendar = functions.https.onCall(
         },
       });
 
-      functions.logger.info('Calendar created', { calendarId: response.data.id });
+      functions.logger.info('Calendar created', { calendarId: response.data?.id });
 
       return {
         success: true,
-        calendarId: response.data.id,
+        calendarId: response.data?.id,
         calendar: response.data,
       };
     } catch (error: any) {
@@ -85,7 +86,7 @@ export const getCalendar = functions.https.onCall(
       const { calendarId } = request.data;
 
       const response = await calendar.calendars.get({
-        auth,
+        auth: auth as any,
         calendarId,
       });
 
@@ -123,7 +124,7 @@ export const createCalendarEvent = functions.https.onCall(
         request.data;
 
       const response = await calendar.events.insert({
-        auth,
+        auth: auth as any,
         calendarId,
         requestBody: {
           summary,
@@ -135,11 +136,11 @@ export const createCalendarEvent = functions.https.onCall(
         },
       });
 
-      functions.logger.info('Event created', { eventId: response.data.id, calendarId });
+      functions.logger.info('Event created', { eventId: response.data?.id, calendarId });
 
       return {
         success: true,
-        eventId: response.data.id,
+        eventId: response.data?.id,
         event: response.data,
       };
     } catch (error: any) {
@@ -180,7 +181,7 @@ export const listCalendarEvents = functions.https.onCall(
       } = request.data;
 
       const response = await calendar.events.list({
-        auth,
+        auth: auth as any,
         calendarId,
         timeMin,
         timeMax,
@@ -189,7 +190,7 @@ export const listCalendarEvents = functions.https.onCall(
         orderBy: orderBy === 'startTime' ? 'startTime' : 'updated',
       });
 
-      const events: CalendarEvent[] = (response.data.items || []).map((event: any) => ({
+      const events: CalendarEvent[] = (response.data?.items || []).map((event: any) => ({
         id: event.id || '',
         summary: event.summary || 'Untitled',
         start: event.start || { date: '' },
@@ -241,7 +242,7 @@ export const updateCalendarEvent = functions.https.onCall(
       if (endTime) updateData.end = { dateTime: endTime };
 
       const response = await calendar.events.update({
-        auth,
+        auth: auth as any,
         calendarId,
         eventId,
         requestBody: updateData,
@@ -280,7 +281,7 @@ export const deleteCalendarEvent = functions.https.onCall(
       const { calendarId, eventId } = request.data;
 
       await calendar.events.delete({
-        auth,
+        auth: auth as any,
         calendarId,
         eventId,
       });

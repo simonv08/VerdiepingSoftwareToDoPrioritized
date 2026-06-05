@@ -5,7 +5,7 @@ import BackgroundLines from './Components/BackgroundLines'
 import TaskForm from './Components/TaskForm'
 import GroceryList from './Components/GroceryList'
 import TaskList from './Components/TaskList'
-import { CalendarEvents } from './Components/CalendarEvents'
+// import { CalendarEvents } from './Components/CalendarEvents'
 import type { NewTaskInput } from './Features/tasks/taskMutations'
 import { selectVisibleTasks } from './Features/tasks/taskSelectors'
 import { sortTasksByPriority } from './Features/tasks/priority'
@@ -265,12 +265,12 @@ function App() {
             </div>
           </div>
 
-          {/* Calendar column */}
-          <div className="lg:col-span-1">
+          {/* Calendar column - disabled for now */}
+          {/* <div className="lg:col-span-1">
             <div className="rounded-xl border border-white/10 bg-white/5 p-4">
               <CalendarEvents daysInFuture={30} maxResults={8} />
             </div>
-          </div>
+          </div> */}
         </div>
       </main>
     </div>
